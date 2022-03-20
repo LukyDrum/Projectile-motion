@@ -1,9 +1,10 @@
 from math import cos, pi, sin, radians, sqrt
 from vectors import Vector
 
-G = 9.81 # m/s - constant
-AIR_DENISTY = 1.225 # kg/m^3 - constant
-DRAG_COEF = 0.5 # Drag coeficient for ball - constant
+# Constants
+G = 9.81 # m/s
+AIR_DENISTY = 1.225 # kg/m^3
+DRAG_COEF = 0.5 # Drag coeficient for (not smooth) ball
 
 
 class Trajectory:
@@ -40,13 +41,14 @@ class Projectile:
         )
 
 
-def no_air_trajectory(init_velocity: Vector, y_init, delta_time):
+def no_air_trajectory(init_velocity: Vector, y_init, delta_time) -> Trajectory:
         velocity: Vector = init_velocity
 
         coors = [[0, y_init]]
-        velocities = []
+        velocities = [[0, init_velocity.magnitude()]]
 
         time = 0 # seconds
+        # While y-coordinate is above 0 = above ground
         while coors[-1][1] >= 0:
             time += delta_time
 
@@ -58,21 +60,24 @@ def no_air_trajectory(init_velocity: Vector, y_init, delta_time):
         
         return Trajectory(coors, velocities)
 
-def with_air_trajectory(init_velocity: Vector, mass, cross_area, y_init, delta_time):
+def with_air_trajectory(init_velocity: Vector, mass, cross_area, y_init, delta_time) -> Trajectory:
     velocity: Vector = init_velocity
 
     coors = [[0, y_init]]
-    velocities = []
+    velocities = [[0, init_velocity.magnitude()]]
 
     time = 0 # seconds
+    # While y-coordinate is above 0 = above ground
     while coors[-1][1] >= 0:
         time += delta_time
 
+        # Air drag in x-direction
         drag_x = -0.5 * AIR_DENISTY * velocity.x**2 * DRAG_COEF * cross_area
         a_x = drag_x / mass
         velocity.x = velocity.x + (a_x * delta_time)
         x = coors[-1][0] + velocity.x * delta_time
 
+        # Air drag in y-direction
         drag_y = -0.5 * AIR_DENISTY * velocity.y**2 * DRAG_COEF * cross_area
         a_y = drag_y / mass - G
         velocity.y = velocity.y + (a_y * delta_time)
