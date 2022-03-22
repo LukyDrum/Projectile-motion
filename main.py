@@ -1,6 +1,39 @@
+from tkinter import Tk, Label, Button
 from calculations import Projectile
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
+from matplotlib.backend_bases import MouseButton
+
+matplotlib.rcParams["toolbar"] = "None"
+
+
+class Pop_up:
+    def __init__(self, master) -> None:
+        self.master = master
+        self.master.title("Save plot")
+
+        self.text = Label(master, text="Save plot")
+        self.text.pack()
+
+        self.butt1 = Button(master, text="Save plot: Trajectory", command=lambda: self._save_subplot(1))
+        self.butt1.pack()
+        self.butt2 = Button(master, text="Save plot: Velocity", command=lambda: self._save_subplot(2))
+        self.butt2.pack()
+    
+    def _save_subplot(self, subplot):
+        if subplot == 1:
+            extent = ax1.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+            fig.savefig("ax1.png", bbox_inches = extent.expanded(1.2, 1.3))
+        elif subplot == 2:
+            extent = ax2.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+            fig.savefig("ax2.png", bbox_inches = extent.expanded(1.2, 1.3))
+
+
+def right_click(event):
+    if event.button is MouseButton.RIGHT:
+        pop = Pop_up(Tk())
+        pop.master.mainloop()
 
 
 def setup_plots(ball: Projectile):
@@ -47,7 +80,8 @@ ax_slider_angle = plt.axes([0.1, 0.25, 0.8, 0.05])
 ax_slider_mass = plt.axes([0.1, 0.15, 0.8, 0.05])
 ax_slider_radius = plt.axes([0.1, 0.05, 0.8, 0.05])
 
-ax1.set_aspect("equal")
+ax1.set_aspect("auto")
+plt.connect("button_press_event", right_click)
 
 # Called everytime a value of slider is changed
 def update_plot(val):
