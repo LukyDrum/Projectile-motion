@@ -97,7 +97,7 @@ def update_plot(val):
 # Setup sliders
 slider_velocity = Slider(ax_slider_velocity, "Initial\nvelocity\n[m/s]", valmin=15, valmax=70, valinit= default_values["velocity"], valstep=0.1)
 slider_velocity.on_changed(update_plot)
-slider_angle = Slider(ax_slider_angle, "Angle\n[°]", valmin=1, valmax=90, valinit= default_values["angle"], valstep=0.1)
+slider_angle = Slider(ax_slider_angle, "Angle\n[°]", valmin=1, valmax=89, valinit= default_values["angle"], valstep=0.1)
 slider_angle.on_changed(update_plot)
 slider_mass = Slider(ax_slider_mass, "Mass\n[kg]", valmin=0.01, valmax=2, valinit= default_values["mass"], valstep=0.01)
 slider_mass.on_changed(update_plot)

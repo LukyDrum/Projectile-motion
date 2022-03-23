@@ -1,5 +1,6 @@
 from math import cos, pi, sin, radians, sqrt
 from vectors import Vector
+from copy import deepcopy
 
 # Constants
 G = 9.81 # m/s
@@ -42,7 +43,7 @@ class Projectile:
 
 
 def no_air_trajectory(init_velocity: Vector, y_init, delta_time) -> Trajectory:
-        velocity: Vector = init_velocity
+        velocity: Vector = deepcopy(init_velocity)
 
         coors = [[0, y_init]]
         velocities = [[0, init_velocity.magnitude()]]
@@ -53,7 +54,8 @@ def no_air_trajectory(init_velocity: Vector, y_init, delta_time) -> Trajectory:
             time += delta_time
 
             x = velocity.x * time
-            y = y_init + velocity.y * time - 0.5 * G * time**2
+            velocity.y = velocity.y - G * delta_time
+            y = coors[-1][1] + velocity.y * delta_time
 
             coors.append([x, y])
             velocities.append([time, velocity.magnitude()])
@@ -61,7 +63,7 @@ def no_air_trajectory(init_velocity: Vector, y_init, delta_time) -> Trajectory:
         return Trajectory(coors, velocities)
 
 def with_air_trajectory(init_velocity: Vector, mass, cross_area, y_init, delta_time) -> Trajectory:
-    velocity: Vector = init_velocity
+    velocity: Vector = deepcopy(init_velocity)
 
     coors = [[0, y_init]]
     velocities = [[0, init_velocity.magnitude()]]
