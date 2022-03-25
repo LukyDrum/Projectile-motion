@@ -5,5 +5,6 @@ class Vector:
         self.x = x
         self.y = y
 
+    @property
     def magnitude(self):
         return sqrt(self.x**2 + self.y**2)
