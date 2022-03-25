@@ -34,58 +34,65 @@ class Projectile:
 
         self.delta_time = 0.01 # seconds
 
-        self.trajectory_no_air = no_air_trajectory(
-            self.init_velocity, self.y_init, self.delta_time
-            )
-        self.trajectory_with_air = with_air_trajectory(
-            self.init_velocity, self.mass, self.cross_area, self.y_init, self.delta_time
-        )
+        self.trajectory_no_air = self._no_air_trajectory()
+        self.trajectory_with_air = self._with_air_trajectory()
 
 
-def no_air_trajectory(init_velocity: Vector, y_init, delta_time) -> Trajectory:
-        velocity: Vector = deepcopy(init_velocity)
+    def _no_air_trajectory(self) -> Trajectory:
+        velocity: Vector = deepcopy(self.init_velocity)
+        delta_time = self.delta_time
 
-        coors = [[0, y_init]]
-        velocities = [[0, init_velocity.magnitude()]]
+        # Default at time 0
+        coors = [[0, 0]]
+        velocities = [[0, velocity.magnitude()]]
 
         time = 0 # seconds
-        # While y-coordinate is above 0 = above ground
+        # While y-coordinate is above 0 => above ground
         while coors[-1][1] >= 0:
             time += delta_time
 
             x = velocity.x * time
+            
             velocity.y = velocity.y - G * delta_time
             y = coors[-1][1] + velocity.y * delta_time
 
+            # Add new set of coordinates to the list
             coors.append([x, y])
+            # Add new set of time and current velocity to the list
             velocities.append([time, velocity.magnitude()])
         
         return Trajectory(coors, velocities)
 
-def with_air_trajectory(init_velocity: Vector, mass, cross_area, y_init, delta_time) -> Trajectory:
-    velocity: Vector = deepcopy(init_velocity)
+    def _with_air_trajectory(self) -> Trajectory:
+        velocity: Vector = deepcopy(self.init_velocity)
+        mass = self.mass
+        cross_area = self.cross_area
+        delta_time = self.delta_time
 
-    coors = [[0, y_init]]
-    velocities = [[0, init_velocity.magnitude()]]
+        # Default at time 0
+        coors = [[0, 0]]
+        velocities = [[0, velocity.magnitude()]]
 
-    time = 0 # seconds
-    # While y-coordinate is above 0 = above ground
-    while coors[-1][1] >= 0:
-        time += delta_time
+        time = 0 # seconds
+        # While y-coordinate is above 0 => above ground
+        while coors[-1][1] >= 0:
+            time += delta_time
 
-        # Air drag in x-direction
-        drag_x = -0.5 * AIR_DENISTY * velocity.x**2 * DRAG_COEF * cross_area
-        a_x = drag_x / mass
-        velocity.x = velocity.x + (a_x * delta_time)
-        x = coors[-1][0] + velocity.x * delta_time
+            # Air drag in x-direction
+            drag_x = -0.5 * AIR_DENISTY * velocity.x**2 * DRAG_COEF * cross_area
+            a_x = drag_x / mass
+            velocity.x = velocity.x + (a_x * delta_time)
+            x = coors[-1][0] + velocity.x * delta_time
 
-        # Air drag in y-direction
-        drag_y = -0.5 * AIR_DENISTY * velocity.y**2 * DRAG_COEF * cross_area
-        a_y = drag_y / mass - G
-        velocity.y = velocity.y + (a_y * delta_time)
-        y = coors[-1][1] + velocity.y * delta_time
+            # Air drag in y-direction
+            drag_y = -0.5 * AIR_DENISTY * velocity.y**2 * DRAG_COEF * cross_area
+            a_y = drag_y / mass - G
+            velocity.y = velocity.y + (a_y * delta_time)
+            y = coors[-1][1] + velocity.y * delta_time
 
-        coors.append([x, y])
-        velocities.append([time, velocity.magnitude()])
-    
-    return Trajectory(coors, velocities)
+            # Add new set of coordinates to the list
+            coors.append([x, y])
+            # Add new set of time and current velocity to the list
+            velocities.append([time, velocity.magnitude()])
+        
+        return Trajectory(coors, velocities)
