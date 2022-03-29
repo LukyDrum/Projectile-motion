@@ -1,4 +1,6 @@
 from tkinter import Tk, Label, Button
+from tkinter.filedialog import askdirectory
+from os.path import join as joinpath
 from calculations import Projectile
 import matplotlib
 import matplotlib.pyplot as plt
@@ -12,19 +14,22 @@ matplotlib.rcParams["toolbar"] = "None"
 class Pop_up:
     """
     Creates a pop up window using Tkinter.
-    It lets user save graphs.
+    It lets user save graphs using the _save_subplot function.
     """
     def __init__(self, master) -> None:
         self.master = master
         self.master.title("Save plot")
-
-        self.text = Label(master, text="Save plot")
+        
+        self.text = Label(master, text="Export plot")
         self.text.pack()
 
         self.butt1 = Button(master, text="Save plot: Trajectory", command=lambda: self._save_subplot(1))
         self.butt1.pack()
         self.butt2 = Button(master, text="Save plot: Velocity", command=lambda: self._save_subplot(2))
         self.butt2.pack()
+
+        self.info = Label(master, text="")
+        self.info.pack()
     
     def _save_subplot(self, subplot):
         """
@@ -32,15 +37,38 @@ class Pop_up:
         Argument must be either 1 or 2:
             1 for first graph
             2 for second graph
+        
+        A temporary figure is created, but not displayed. This figure is then saved.
         """
+
+        # Prompt user with file directory where they want to save the plot image
+        self.ask_directory = askdirectory(parent = self.master, initialdir = "/", mustexist = True)
+
         if subplot == 1:
-            extent = ax1.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
-            fig.savefig("ax1.png", bbox_inches = extent.expanded(1.2, 1.3))
+            """
+            Creates and saves the trajectory plot to selected directory
+            """
+            tmp_fig, tmp_ax = plt.subplots()
+            tmp_ax.plot([x[0] for x in ball.trajectory_no_air.coordinates], [x[1] for x in ball.trajectory_no_air.coordinates], label="No air")
+            tmp_ax.plot([x[0] for x in ball.trajectory_with_air.coordinates], [x[1] for x in ball.trajectory_with_air.coordinates], label="With air")
+            tmp_ax.set(xlabel="x [m]", ylabel="y [m]")
+            tmp_fig.savefig(joinpath(self.ask_directory, "trajectory.png"))
+            self.info.config(text = "Plot exported succesfuly!")
+
         elif subplot == 2:
-            extent = ax2.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
-            fig.savefig("ax2.png", bbox_inches = extent.expanded(1.2, 1.3))
+            """
+            Creates and saves the velocity plot to selected directory
+            """
+            tmp_fig, tmp_ax = plt.subplots()
+            tmp_ax.plot([x[0] for x in ball.trajectory_no_air.velocities], [x[1] for x in ball.trajectory_no_air.velocities], label="No air")
+            tmp_ax.plot([x[0] for x in ball.trajectory_with_air.velocities], [x[1] for x in ball.trajectory_with_air.velocities], label="With air")
+            tmp_ax.set(xlabel="time [s]", ylabel="velocity [m/s]")
+            tmp_fig.savefig(joinpath(self.ask_directory, "velocity.png"))
+            self.info.config(text = "Plot exported succesfuly!")
+
         else:
-            print("Error - cannot save graph\nArgument needs to be 1 or 2")
+            # If invalid argument is given
+            print("Error - cannot save graph -> Argument needs to be 1 or 2")
 
 
 def right_click(event):
@@ -75,6 +103,30 @@ def setup_plots(ball: Projectile):
     ax2.plot([x[0] for x in ball.trajectory_no_air.velocities], [x[1] for x in ball.trajectory_no_air.velocities], label="No air")
     # With air
     ax2.plot([x[0] for x in ball.trajectory_with_air.velocities], [x[1] for x in ball.trajectory_with_air.velocities], label="With air")
+
+    # Adds extra ticks to trajectory graph for max distance and max height
+    # Removes any nearby ticks that might overlap
+    extra_xticks = [ball.trajectory_no_air.max_distance, ball.trajectory_with_air.max_distance]
+    all_xticks = ax1.get_xticks()
+    final_xticks = []
+    for tick in all_xticks:
+        if not ((tick > extra_xticks[0] - 0.1 * all_xticks[-1] and tick < extra_xticks[0] + 0.1 * all_xticks[-1])
+            or
+            (tick > extra_xticks[1] - 0.1 * all_xticks[-1] and tick < extra_xticks[1] + 0.1 * all_xticks[-1])):
+            final_xticks.append(tick)
+    final_xticks += extra_xticks
+    ax1.set_xticks(final_xticks)
+
+    extra_yticks = [ball.trajectory_no_air.max_height, ball.trajectory_with_air.max_height]
+    all_yticks = ax1.get_yticks()
+    final_yticks = []
+    for tick in all_yticks:
+        if not ((tick > extra_yticks[0] - 0.1 * all_yticks[-1] and tick < extra_yticks[0] + 0.1 * all_yticks[-1])
+            or
+            (tick > extra_yticks[1] - 0.1 * all_yticks[-1] and tick < extra_yticks[1] + 0.1 * all_yticks[-1])):
+            final_yticks.append(tick)
+    final_yticks += extra_yticks
+    ax1.set_yticks(final_yticks)
 
     # Show legend for both graphs
     ax1.legend()

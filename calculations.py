@@ -30,14 +30,13 @@ class Projectile:
     Contains all information about the projectile.
     """
     def __init__(
-        self, v_init: float|int, alpha: float|int, 
-        mass: float|int, radius: float|int, y_init: float|int=0
+        self, v_init, alpha, 
+        mass, radius
         ) -> None:
         self.alpha = radians(alpha)
         self.init_velocity = Vector(v_init * cos(self.alpha), v_init * sin(self.alpha))
         self.mass = mass
         self.radius = radius
-        self.y_init = y_init
         # Cross-seactional area for ball
         self.cross_area = pi * radius**2
 
@@ -99,13 +98,15 @@ class Projectile:
             A ... cross-sectional area
             G ... gravitational acceleration = 9.81
 
-            F_dragx = -0.5 * ro * v_x * D * A
-            a_x = F_dragx / m
+            F_drag = -0.5 * ro * v**2 * D * A
+
+            F_drag_x = F_drag * (v_x / v)
+            a_x = F_drag_x / m
             v_x = v_x + a_x * delta_time
             x = last_x + v_x * delta_time
             
-            F_dragy = -0.5 * ro * v_y * D * A
-            a_y = F_dragy / m - G
+            F_drag_y = F_drag * (v_y / v)
+            a_y = F_drag_y / m - G
             v_y = v_y + a_y * delta_time
             y = last_y + v_y * delta_time
         """
@@ -123,14 +124,16 @@ class Projectile:
         while coors[-1][1] >= 0:
             time += delta_time
 
+            drag = -0.5 * AIR_DENISTY * velocity.magnitude**2 * DRAG_COEF * cross_area
+
             # X coordinate
-            drag_x = -0.5 * AIR_DENISTY * velocity.x**2 * DRAG_COEF * cross_area
+            drag_x = drag * (velocity.x / velocity.magnitude)
             a_x = drag_x / mass
             velocity.x = velocity.x + (a_x * delta_time)
             x = coors[-1][0] + velocity.x * delta_time
 
             # Y coordinate
-            drag_y = -0.5 * AIR_DENISTY * velocity.y**2 * DRAG_COEF * cross_area
+            drag_y = drag * (velocity.y / velocity.magnitude)
             a_y = drag_y / mass - G
             velocity.y = velocity.y + (a_y * delta_time)
             y = coors[-1][1] + velocity.y * delta_time
